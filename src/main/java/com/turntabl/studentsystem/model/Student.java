@@ -4,6 +4,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import java.util.Optional;
 
 @Entity
 public class Student {
@@ -14,6 +15,7 @@ public class Student {
     private String address;
 
     public Student() {
+        super();
     }
 
     public int getId() {
@@ -24,16 +26,16 @@ public class Student {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public Optional<String> getName() {
+        return Optional.ofNullable(name);
     }
 
     public void setName(String name) {
         this.name = name;
     }
 
-    public String getAddress() {
-        return address;
+    public Optional<String> getAddress() {
+        return Optional.ofNullable(address);
     }
 
     public void setAddress(String address) {

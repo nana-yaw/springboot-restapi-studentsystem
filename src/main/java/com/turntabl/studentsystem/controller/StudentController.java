@@ -1,15 +1,19 @@
 package com.turntabl.studentsystem.controller;
 
+import com.turntabl.studentsystem.controller.dtos.StudentUpdateDtos;
 import com.turntabl.studentsystem.model.Student;
 import com.turntabl.studentsystem.service.StudentService;
+import com.turntabl.studentsystem.utils.JsonNullableUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
+
+import static com.turntabl.studentsystem.utils.JsonNullableUtils.*;
 
 @RestController
 @RequestMapping("/student")
@@ -31,21 +35,27 @@ public class StudentController {
     @GetMapping("/{id}")
     public ResponseEntity<Student> get(@PathVariable Integer id){
         try{
-            Student student = studentService.get(id);
-            return new ResponseEntity<Student>(student, HttpStatus.OK);
+            Optional<Student> student = studentService.get(id);
+            return new ResponseEntity<Student>(student.get(), HttpStatus.OK);
         } catch (NoSuchElementException e){
             return new ResponseEntity<Student>(HttpStatus.NOT_FOUND);
         }
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Student> patch(@PathVariable Integer id, @RequestBody Map<String, Object> changes){
-        try{
-            Student updatedStudent = studentService.patch(id,changes);
-            return new ResponseEntity<Student>(updatedStudent, HttpStatus.OK);
-        } catch (NoSuchElementException e){
-            return  new ResponseEntity<Student>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<Void> updatePerson(@PathVariable("id") Integer id, @RequestBody StudentUpdateDtos studentUpdateDtos) {
+        Optional<Student> studentOptional = studentService.get(id);
+        if (studentOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
         }
+
+        Student student = studentOptional.get();
+        changeIfPresent(studentUpdateDtos.getName(), student::setName);
+        changeIfPresent(studentUpdateDtos.getAddress(), student::setAddress);
+
+        studentService.saveStudent(student);
+
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
